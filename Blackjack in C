@@ -132,7 +132,7 @@ void Deal(struct Card deck[52], int money, int bet, int c) {
     }
 
     //win/loss logic
-    printf("\nDealer's flipped card was ");// This message lets the user know that the dealers card has been flipped
+    printf("\nDealer's hidden card was ");// This message lets the user know that the dealers card has been flipped
     GetFace(dealerHand[0]);
     printf("\nYour total is %d.\n", playerSum);
     printf("Dealer's total is %d.\n", dealerSum);
@@ -169,6 +169,9 @@ void Deal(struct Card deck[52], int money, int bet, int c) {
     if (money > 1000000) {
         printf("You won Blackjack by winning a million dollars! Congratulations!");// The printf statments in this C program lets the user know that they have won the game
     }
+    else if (money <= 0) {
+        printf("You went bankrupt! You lost!");
+    }
     else {
         Deal(deck, money, bet, c);
     }
@@ -178,7 +181,7 @@ void Deal(struct Card deck[52], int money, int bet, int c) {
 // This fuction asks the asks the user to place their bets
 int BetAsk(int bet, int money) {
     char choice;
-    printf("\nWould you like to change your bet? Y or N?: ");// this line of the C program will ask the user if they want to change their bets. The message provided in this C program will be displayed in the output.
+    printf("\nWould you like to change your bet? Y or N? Enter Q to quit: ");// this line of the C program will ask the user if they want to change their bets. The message provided in this C program will be displayed in the output.
     scanf_s(" %c", &choice); //space before %c to clear new line character from previous scanf_s statement
     if ((choice == 'Y') || (choice == 'y')) {
         printf("\nInput your bet: ");// This line of the C program code prompts the user to place their bet
@@ -190,6 +193,9 @@ int BetAsk(int bet, int money) {
         else {
             return(bet);
         }
+    }
+    else if ((choice == 'Q') || (choice == 'q')) {
+        exit(0); //exit the program using exit from stdlib with status 0
     }
     return(bet);
 }
