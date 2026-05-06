@@ -1,0 +1,213 @@
+//Israel Okayi-Osazuwa, Adam Sjolander, Jack Burke, Jacob Coutu, Derek Barry
+//ECE 170-01 Final Project
+//Blackjack
+
+#include <stdio.h>
+#include <stdlib.h>
+
+
+//static void card_shuffler(const card group[52]);
+
+//static void card_name(const card group[52]);
+
+
+//static void users_turn(const card group[52]);
+
+struct Card {
+    char face;
+    char suit;
+    int value;
+};
+
+int GetValue(struct Card card) {
+    switch (card.face) {
+    case 'a':
+        return 11;
+        break;
+    case 'k':
+    case 'q': //if it's a face card or ten return 10
+    case 'j':
+    case '0':
+        return 10;
+        break;
+    case ' ': //so we can use this function to see if a card isn't there, since cards in hands start as 2 space characters
+        return 0;
+        break;
+    default:
+        return (int)card.face; //if it's not an ace or face card, return the value as an integer
+    }
+}
+
+void GetFace(struct Card card) { //has to be a pointer because simply returning a string is not allowed
+    switch (card.face) {
+    case 'a':
+        printf("Ace");
+        break;
+    case 'k':
+        printf("King");
+        break;
+    case 'q':
+        printf("Queen");
+        break;
+    case 'j':
+        printf("Jack");
+        break;
+    case '0':
+        printf("10");
+        break;
+    case ' ':
+        printf("Blank");
+        break;
+    default:
+        printf("%c", card.face);
+    }
+    printf(" of ");
+    switch (card.suit) {
+    case 'c':
+        printf("Clubs");
+        break;
+    case's':
+        printf("Spades");
+        break;
+    case'h':
+        printf("Hearts");
+        break;
+    case'd':
+        printf("Diamonds");
+        break;
+    default:
+        printf("Invalid");
+    }
+}
+
+void Deal(struct Card deck[52], int money, int bet, int c) {
+    struct Card playerHand[5] = { {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '} };
+    int playerSum = 0; //sum of points of hand
+    struct Card dealerHand[5] = { {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '} };
+    int dealerSum = 0;
+    printf("\nYour money: $%d\nYour bet: $%d\n", money, bet);
+    bet = BetAsk(bet, money);
+    money -= bet;
+    int e; //rand index value used for shuffling
+    if (c > 42) { //shuffling
+        printf("Shuffling...\n\n");
+        struct Card shuffleDeck[52] = { {' ', ' '} };
+        for (int d = 0; d < 52; ++d) {// for each card in the deck, try and put it in the shuffle deck randomly and then, at the end, set the deck to the shuffle deck
+            e = rand() % 52;
+            while (shuffleDeck[e].value != 0) { //if the space is not empty,
+                e = rand() % 52;//try another space
+            }
+            shuffleDeck[e] = deck[d];
+        }
+        deck = shuffleDeck;
+        c = 0;
+    }
+    dealerHand[0] = deck[c++];
+    dealerHand[1] = deck[c++];
+    dealerSum += dealerHand[0].value + dealerHand[1].value;
+    printf("The dealer shows: one flipped card, ");
+    GetFace(dealerHand[1]);
+    //todo: have player have their turn
+    playerHand[0] = deck[c++];
+    playerHand[1] = deck[c++];
+    playerSum += playerHand[0].value + playerHand[1].value;
+    printf("\nYou have: ");
+    GetFace(playerHand[0]);
+    printf(", ");
+    GetFace(playerHand[1]);
+    printf("; %d", playerSum);
+    if (playerSum <= 21) {
+        char choice;
+        printf("\nHit or stand? Enter H or S: ");
+        scanf_s(" %c", &choice); //space before %c clears new line character from scanf_s statement in BetAsk
+        if ((choice == 'H') || (choice == 'h')) {
+            printf("You drew: ");
+            playerHand[2] = deck[c++];
+            playerSum += playerHand[2].value;
+            GetFace(playerHand[2]);
+        }
+    }
+    printf("\n");
+    for (int a = 2; a < 4; ++a) {
+        if (dealerSum < 16) {
+            dealerHand[a] = deck[(a + c)]; //add cards to the dealer's hand until he reaches 16, where he must stand
+            printf("Dealer draws ");
+            GetFace(dealerHand[a]);
+            printf("\n");
+            dealerSum += dealerHand[a].value;
+        }
+        break; //stand by breaking the loop if the dealer reaches 
+    }
+    //win/loss logic
+    printf("\n");
+    if (playerSum > 21) {
+        printf("Bust! You lost $%d", bet);
+    }
+    else if (playerSum < dealerSum) {
+        printf("Dealer's flipped card was ");
+        GetFace(dealerHand[0]);
+        printf("\nDealer won! You lost $%d", bet);
+    }
+    else if (playerSum > dealerSum) {
+        if (playerSum == 21) {
+            printf("Natural! You win $%d!!", bet * 3);
+            money += bet * 2;
+        }
+        else {
+            printf("You win $%d!", bet * 2);
+            money += bet * 3;
+        }
+    }
+    else if (playerSum > 21 && dealerSum > 21) {
+        printf("You and the dealer both lost, you get back your $%d.", bet);
+        money += bet;
+    }
+    else {
+        printf("Bust! You lost $%d", bet); //if none of these winning conditions are met, bust
+    }
+    if (money > 1000000) {
+        printf("You won Blackjack by winning a million dollars! Congratulations!");
+    }
+    else {
+        Deal(deck, money, bet, c);
+    }
+}
+
+
+
+int BetAsk(int bet, int money) {
+    char choice;
+    printf("\nWould you like to change your bet? Y or N?: ");
+    scanf_s(" %c", &choice); //space before %c to clear new line character from previous scanf_s statement
+    if ((choice == 'Y') || (choice == 'y')) {
+        printf("\nInput your bet: ");
+        scanf_s("%d", &bet);
+        if (bet > money) {
+            printf("You can't bet more than you have!\n");
+            BetAsk(bet, money);
+        }
+        else {
+            return(bet);
+        }
+    }
+    return(bet);
+}
+
+int main(void) {
+    printf("Welcome to Blackjack. Dealer must stand on a 16\n\n");
+    srand(time(NULL)); //seed rand with system time
+    int money = 1000;
+    int bet = 1;
+    //a for ace
+    //k for king
+    //q for queen
+    //j for jack
+
+    //s for spades
+    //c for clubs
+    //h for hearts
+    //d for diamonds
+    //52 card deck
+    struct Card deck[52] = { {'a', 's', 11}, {'a', 'c', 11}, {'a', 'h', 11}, {'a', 'd', 11}, {'2', 's', 2}, {'2', 'c', 2}, {'2', 'h', 2}, {'2', 'd', 2}, {'3', 's', 3}, {'3', 'c', 3}, {'3', 'h', 3}, {'3', 'd', 3}, {'4', 's', 4}, {'4', 'c', 4}, {'4', 'h', 4}, {'4', 'd', 4}, {'5', 's', 5}, {'5', 'c', 5}, {'5', 'h', 5}, {'5', 'd', 5}, {'6', 's', 6}, {'6', 'c', 6}, {'6', 'h', 6}, {'6', 'd', 6}, {'7', 's', 7}, {'7', 'c', 7}, {'7', 'h', 7}, {'7', 'd', 7}, {'8', 's', 8}, {'8', 'c', 8}, {'8', 'h', 8}, {'8', 'd', 8}, {'9', 's', 9}, {'9', 'c', 9}, {'9', 'h', 9}, {'9', 'd', 9}, {'0', 's', 10}, {'0', 'c', 10}, {'0', 'h', 10}, {'0', 'd', 10}, {'j', 's', 10}, {'j', 'c', 10}, {'j', 'h', 10}, {'j', 'd', 10}, {'q', 's', 10}, {'q', 'c', 10}, {'q', 'h', 10}, {'q', 'd', 10}, {'k', 's', 10}, {'k', 'c', 10}, {'k', 'h', 10}, {'k', 'd', 10} };    
+    Deal(deck, money, bet, 52);
+}
