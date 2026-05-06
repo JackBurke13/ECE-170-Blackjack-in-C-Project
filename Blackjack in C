@@ -5,39 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-//static void card_shuffler(const card group[52]);
-
-//static void card_name(const card group[52]);
-
-
-//static void users_turn(const card group[52]);
-
+//The struct for cards that allows it to store its face, suit and value
 struct Card {
     char face;
     char suit;
     int value;
 };
 
-int GetValue(struct Card card) {
-    switch (card.face) {
-    case 'a':
-        return 11;
-        break;
-    case 'k':
-    case 'q': //if it's a face card or ten return 10
-    case 'j':
-    case '0':
-        return 10;
-        break;
-    case ' ': //so we can use this function to see if a card isn't there, since cards in hands start as 2 space characters
-        return 0;
-        break;
-    default:
-        return (int)card.face; //if it's not an ace or face card, return the value as an integer
-    }
-}
-
+//Prints the name of cards (like ace of spades) given the face and suit value of the cards
 void GetFace(struct Card card) { //has to be a pointer because simply returning a string is not allowed
     switch (card.face) {
     case 'a':
@@ -80,6 +55,12 @@ void GetFace(struct Card card) { //has to be a pointer because simply returning 
     }
 }
 
+//The primary function that redurses with each round
+//Handles the player's and dealer's hand of cards,
+//Shuffling cards,
+//Having the player make their turn,
+//The dealer drawing cards,
+//And win/loss conditions
 void Deal(struct Card deck[52], int money, int bet, int c) {
     struct Card playerHand[5] = { {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '}, {' ', ' '} };
     int playerSum = 0; //sum of points of hand
@@ -139,31 +120,39 @@ void Deal(struct Card deck[52], int money, int bet, int c) {
         break; //stand by breaking the loop if the dealer reaches 
     }
     //win/loss logic
-    printf("\n");
-    if (playerSum > 21) {
+    printf("\nDealer's flipped card was ");
+    GetFace(dealerHand[0]);
+    printf("\nYour total is %d.\n", playerSum);
+    printf("Dealer's total is %d.\n", dealerSum);
+    if ((playerSum > 21) && (dealerSum > 21)) {
+        printf("You and the dealer both lost, you get back your $%d.", bet);
+        money += bet;
+    }
+    else if (playerSum > 21) {
         printf("Bust! You lost $%d", bet);
     }
-    else if (playerSum < dealerSum) {
-        printf("Dealer's flipped card was ");
-        GetFace(dealerHand[0]);
-        printf("\nDealer won! You lost $%d", bet);
+    else if ((playerSum < dealerSum) && (dealerSum <= 21)) {
+        if (dealerSum <= 21) {
+            printf("\nDealer won! You lost $%d", bet);
+        }
+        else {
+            printf("You win $%d!", bet * 2);
+            money += bet * 2;
+        }
     }
     else if (playerSum > dealerSum) {
         if (playerSum == 21) {
             printf("Natural! You win $%d!!", bet * 3);
-            money += bet * 2;
+            money += bet * 3;
         }
         else {
             printf("You win $%d!", bet * 2);
-            money += bet * 3;
+            money += bet * 2;
         }
-    }
-    else if (playerSum > 21 && dealerSum > 21) {
-        printf("You and the dealer both lost, you get back your $%d.", bet);
-        money += bet;
     }
     else {
         printf("Bust! You lost $%d", bet); //if none of these winning conditions are met, bust
+
     }
     if (money > 1000000) {
         printf("You won Blackjack by winning a million dollars! Congratulations!");
@@ -173,8 +162,8 @@ void Deal(struct Card deck[52], int money, int bet, int c) {
     }
 }
 
-
-
+//The BetAsk function asks the user if they want to change their bet each round
+//It makes sure the user doesnt try to bet more than they have and calls the function again if they do
 int BetAsk(int bet, int money) {
     char choice;
     printf("\nWould you like to change your bet? Y or N?: ");
@@ -193,6 +182,7 @@ int BetAsk(int bet, int money) {
     return(bet);
 }
 
+//The main function in this program starts the money at 1000 and begins recursing through the Deal function
 int main(void) {
     printf("Welcome to Blackjack. Dealer must stand on a 16\n\n");
     srand(time(NULL)); //seed rand with system time
@@ -207,7 +197,9 @@ int main(void) {
     //c for clubs
     //h for hearts
     //d for diamonds
+    
+    
     //52 card deck
-    struct Card deck[52] = { {'a', 's', 11}, {'a', 'c', 11}, {'a', 'h', 11}, {'a', 'd', 11}, {'2', 's', 2}, {'2', 'c', 2}, {'2', 'h', 2}, {'2', 'd', 2}, {'3', 's', 3}, {'3', 'c', 3}, {'3', 'h', 3}, {'3', 'd', 3}, {'4', 's', 4}, {'4', 'c', 4}, {'4', 'h', 4}, {'4', 'd', 4}, {'5', 's', 5}, {'5', 'c', 5}, {'5', 'h', 5}, {'5', 'd', 5}, {'6', 's', 6}, {'6', 'c', 6}, {'6', 'h', 6}, {'6', 'd', 6}, {'7', 's', 7}, {'7', 'c', 7}, {'7', 'h', 7}, {'7', 'd', 7}, {'8', 's', 8}, {'8', 'c', 8}, {'8', 'h', 8}, {'8', 'd', 8}, {'9', 's', 9}, {'9', 'c', 9}, {'9', 'h', 9}, {'9', 'd', 9}, {'0', 's', 10}, {'0', 'c', 10}, {'0', 'h', 10}, {'0', 'd', 10}, {'j', 's', 10}, {'j', 'c', 10}, {'j', 'h', 10}, {'j', 'd', 10}, {'q', 's', 10}, {'q', 'c', 10}, {'q', 'h', 10}, {'q', 'd', 10}, {'k', 's', 10}, {'k', 'c', 10}, {'k', 'h', 10}, {'k', 'd', 10} };    
+    struct Card deck[52] = { {'a', 's', 11}, {'a', 'c', 11}, {'a', 'h', 11}, {'a', 'd', 11}, {'2', 's', 2}, {'2', 'c', 2}, {'2', 'h', 2}, {'2', 'd', 2}, {'3', 's', 3}, {'3', 'c', 3}, {'3', 'h', 3}, {'3', 'd', 3}, {'4', 's', 4}, {'4', 'c', 4}, {'4', 'h', 4}, {'4', 'd', 4}, {'5', 's', 5}, {'5', 'c', 5}, {'5', 'h', 5}, {'5', 'd', 5}, {'6', 's', 6}, {'6', 'c', 6}, {'6', 'h', 6}, {'6', 'd', 6}, {'7', 's', 7}, {'7', 'c', 7}, {'7', 'h', 7}, {'7', 'd', 7}, {'8', 's', 8}, {'8', 'c', 8}, {'8', 'h', 8}, {'8', 'd', 8}, {'9', 's', 9}, {'9', 'c', 9}, {'9', 'h', 9}, {'9', 'd', 9}, {'0', 's', 10}, {'0', 'c', 10}, {'0', 'h', 10}, {'0', 'd', 10}, {'j', 's', 10}, {'j', 'c', 10}, {'j', 'h', 10}, {'j', 'd', 10}, {'q', 's', 10}, {'q', 'c', 10}, {'q', 'h', 10}, {'q', 'd', 10}, {'k', 's', 10}, {'k', 'c', 10}, {'k', 'h', 10}, {'k', 'd', 10} };
     Deal(deck, money, bet, 52);
 }
